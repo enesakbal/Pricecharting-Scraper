@@ -1,8 +1,11 @@
 venv/
+.DS_Store
 __pycache__/
 *.pyc
 *.pyo
 .env
 *.csv
+# Scraper output: DD-MM-YYYY-<console>.json
+??-??-????-*.json
 .pytest_cache/
 **/__pycache__/

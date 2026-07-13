@@ -1,6 +1,6 @@
 # Pricecharting Scraper
 
-> Uses web scraping to pull loose, CIB, and new market values for video games from pricecharting.com and outputs them to a CSV file.
+> Uses web scraping to pull loose, CIB, and new market values (plus cover images) for video games from pricecharting.com and outputs them to one JSON file per console.
 
 ## Requirements
 
@@ -35,32 +35,32 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python3 scraper.py [--console CONSOLE] [--output FILENAME] [--workers N] [--pause SECONDS]
+python3 scraper.py [--console CONSOLE] [--output-dir DIR] [--workers N] [--pause SECONDS]
 ```
+
+Each console is written to its own file named `<DD-MM-YYYY>-<console>.json`
+(the scrape date followed by the console slug), e.g. `13-07-2026-virtual-boy.json`.
 
 ### Arguments
 
-| Argument    | Default           | Description                                                                           |
-| ----------- | ----------------- | ------------------------------------------------------------------------------------- |
-| `--console` | _(all consoles)_  | Scrape a single console by slug (e.g. `super-nintendo`). Omit to scrape all consoles. |
-| `--output`  | `game_prices.csv` | Output CSV filename                                                                   |
-| `--workers` | `1`               | Number of concurrent browser instances. See note below before increasing.             |
-| `--pause`   | `1.5`             | Seconds to wait between scroll attempts. Increase if games are not fully loading.     |
+| Argument       | Default             | Description                                                                            |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| `--console`    | _(all consoles)_    | Scrape a single console by slug (e.g. `super-nintendo`). Omit to scrape all consoles.  |
+| `--output-dir` | _(current dir)_     | Directory for the output JSON files. One `<DD-MM-YYYY>-<console>.json` file per console.|
+| `--workers`    | `1`                 | Number of concurrent browser instances. See note below before increasing.             |
+| `--pause`      | `1.5`               | Seconds to wait between scroll attempts. Increase if games are not fully loading.      |
 
 ### Examples
 
 ```bash
-# Scrape all consoles, output to default file
+# Scrape all consoles, one JSON file per console in the current directory
 python3 scraper.py
 
-# Scrape a single console
+# Scrape a single console (writes e.g. 13-07-2026-super-nintendo.json)
 python3 scraper.py --console super-nintendo
 
-# Scrape a single console to a custom file
-python3 scraper.py --console nintendo-64 --output n64_prices.csv
-
-# Scrape all consoles with a custom output file
-python3 scraper.py --output full_catalog.csv
+# Scrape a single console into a specific directory
+python3 scraper.py --console nintendo-64 --output-dir ./data
 
 # Increase scroll pause time (useful if games aren't fully loading)
 python3 scraper.py --console nes --pause 3.0
@@ -90,16 +90,37 @@ By default, all major NTSC consoles are scraped:
 
 **SNK:** Neo Geo MVS, Neo Geo AES, Neo Geo CD, Neo Geo Pocket Color
 
-## CSV Format
+## JSON Format
 
-| Column         | Description                          |
-| -------------- | ------------------------------------ |
-| `game`         | Game title                           |
-| `console`      | Console slug (e.g. `super-nintendo`) |
-| `loose_val`    | Loose / cartridge-only price         |
-| `complete_val` | Complete in box (CIB) price          |
-| `new_val`      | New/sealed price                     |
-| `date(D/M/Y)`  | Date the data was scraped            |
+Each output file is a **flat list** of games for one console. The console slug
+and scrape date are carried by the filename (`<DD-MM-YYYY>-<console>.json`), so
+they are not repeated inside the file.
+
+```json
+[
+  {
+    "game": "Jack Bros.",
+    "loose": "867.90",
+    "complete": "2000.00",
+    "new": "4000.00",
+    "image": {
+      "small": "https://storage.googleapis.com/images.pricecharting.com/…/60.jpg",
+      "large": "https://storage.googleapis.com/images.pricecharting.com/…/240.jpg"
+    }
+  }
+]
+```
+
+| Field            | Description                                                        |
+| ---------------- | ----------------------------------------------------------------- |
+| `game`           | Game title                                                        |
+| `loose`          | Loose / cartridge-only price (string; `"N/A"` when unlisted)      |
+| `complete`       | Complete in box (CIB) price (string; `"N/A"` when unlisted)       |
+| `new`            | New/sealed price (string; `"N/A"` when unlisted)                  |
+| `image.small`    | Cover thumbnail URL (60px)                                        |
+| `image.large`    | Cover image URL (240px)                                           |
+
+When a game has no cover image, `"image"` is `null`.
 
 ## Known Limitations
 
@@ -107,7 +128,7 @@ By default, all major NTSC consoles are scraped:
 - **Apple Silicon (M1/M2/M3)** — `webdriver-manager` may download an incorrect ChromeDriver binary on ARM Macs. If Chrome fails to launch, install Chrome manually and use Selenium's built-in driver manager by removing the `Service(ChromeDriverManager().install())` call and passing only `options` to `webdriver.Chrome()`.
 - **Site changes** — This scraper targets specific HTML element IDs and CSS classes on pricecharting.com. If the site updates its layout, the scraper may stop returning data or return incomplete results. If you encounter this, please [open an issue](https://github.com/markfoster314/Pricecharting-Scraper/issues/new).
 - **Rate limiting** — No request throttling is implemented between consoles. Running many workers simultaneously may result in your IP being temporarily rate-limited by pricecharting.com.
-- **N/A prices** — Some games do not have a listed price for all three conditions (loose, CIB, new). These are recorded as `N/A` in the CSV.
+- **N/A prices** — Some games do not have a listed price for all three conditions (loose, CIB, new). These are recorded as `"N/A"` in the JSON.
 
 ## Disclaimer
 

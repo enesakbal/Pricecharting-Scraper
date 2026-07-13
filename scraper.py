@@ -1,5 +1,5 @@
 import time
-import csv
+import json
 import os
 import argparse
 import concurrent.futures
@@ -146,7 +146,21 @@ def scrape_console(console, pause_time):
             complete = parse_price("cib_price")
             new = parse_price("new_price")
 
-            games.append(VideoGame(title, console, loose, complete, new))
+            # Cover image lives in the "image" cell. The listing serves the
+            # 60px thumbnail; the 240px version is the same URL with /60.jpg
+            # swapped for /240.jpg (no extra request needed).
+            image_small = None
+            image_large = None
+            image_td = row.find("td", class_="image")
+            img_tag = image_td.find("img") if image_td else None
+            if img_tag:
+                src = img_tag.get("src") or img_tag.get("data-src")
+                if src:
+                    image_small = src
+                    image_large = src.replace("/60.jpg", "/240.jpg")
+
+            games.append(VideoGame(title, console, loose, complete, new,
+                                   image_small, image_large))
 
         print(f"[{console}] Done — {len(games)} games scraped.")
     except Exception as exc:
@@ -157,30 +171,29 @@ def scrape_console(console, pause_time):
     return games
 
 
-def write_csv(all_games, output_file):
-    """Writes all scraped VideoGame objects to game_prices.csv.
+def write_json(console, games, output_dir, date):
+    """Writes one console's games to a dated JSON file.
+
+    The file is a flat list of games; the console and scrape date are carried
+    by the filename (DD-MM-YYYY-<console>.json) rather than repeated inside.
 
     Args:
-        all_games: list of VideoGame objects
-        output_file: name of the output file
+        console: console slug (used in the filename)
+        games: list of VideoGame objects for this console
+        output_dir: directory to write the file into
+        date: scrape date string in DD-MM-YYYY form
+
+    Returns:
+        the path of the file written
     """
-    today = datetime.now().strftime("%d/%m/%Y")
-    fieldnames = ["game", "console", "loose_val", "complete_val", "new_val", "date(D/M/Y)"]
+    filename = os.path.join(output_dir, f"{date}-{console}.json")
+    data = [g.to_dict() for g in games]
 
-    with open(output_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        for g in all_games:
-            writer.writerow({
-                "game": g.getTitle(),
-                "console": g.getConsole(),
-                "loose_val": g.getLoosePrice(),
-                "complete_val": g.getCompletePrice(),
-                "new_val": g.getNewPrice(),
-                "date(D/M/Y)": today,
-            })
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
-    print(f"\nCSV written to {os.path.abspath(output_file)} ({len(all_games)} total games)")
+    print(f"JSON written to {os.path.abspath(filename)} ({len(games)} games)")
+    return filename
 
 
 def main():
@@ -198,10 +211,11 @@ def main():
         help="Scrape a single console by name (e.g. --console super-nintendo). Omit to scrape all consoles."
     )
     parser.add_argument(
-        "--output",
+        "--output-dir",
         type=str,
-        default="game_prices.csv",
-        help="Output CSV filename (default: game_prices.csv)"
+        default=".",
+        help="Directory for the output JSON files (default: current directory). "
+             "Each console is written to <DD-MM-YYYY>-<console>.json."
     )
     parser.add_argument(
         "--pause",
@@ -219,8 +233,11 @@ def main():
     if args.console and args.console not in CONSOLES:
         print(f"WARNING: '{args.console}' is not in the known CONSOLES list. Proceeding anyway...")
 
+    os.makedirs(args.output_dir, exist_ok=True)
+    date = datetime.now().strftime("%d-%m-%Y")
+
     print(f"Scraping values from pricecharting.com (max_workers={args.workers})\n")
-    all_games = []
+    total_games = 0
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as executor:
         future_to_console = {
@@ -231,12 +248,12 @@ def main():
             console = future_to_console[future]
             try:
                 games = future.result()
-                all_games.extend(games)
+                write_json(console, games, args.output_dir, date)
+                total_games += len(games)
             except Exception as exc:
                 print(f"[{console}] Unhandled exception: {exc}")
 
-    write_csv(all_games, args.output)
-    print("Finished.")
+    print(f"\nFinished — {total_games} total games across {len(target_consoles)} console(s).")
 
 
 if __name__ == "__main__":
