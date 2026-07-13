@@ -39,27 +39,40 @@ python3 scraper.py [--console CONSOLE] [--output-dir DIR] [--workers N] [--pause
 ```
 
 Each console is written to its own file named `<DD-MM-YYYY>-<console>.json`
-(the scrape date followed by the console slug), e.g. `13-07-2026-virtual-boy.json`.
+(the scrape date followed by the console slug), grouped into a subfolder per
+manufacturer:
+
+```
+nintendo/13-07-2026-nes.json
+sony/13-07-2026-playstation.json
+atari/13-07-2026-atari-2600.json
+```
+
+Groups: `nintendo`, `sony`, `xbox`, `atari`, `neo-geo`, `sega`.
+
+Sony consoles are scraped in all three regional editions, each a separate
+console on pricecharting: NTSC/USA (`playstation`), PAL/Europe
+(`pal-playstation`) and Japan (`jp-playstation`).
 
 ### Arguments
 
 | Argument       | Default             | Description                                                                            |
 | -------------- | ------------------- | ------------------------------------------------------------------------------------- |
 | `--console`    | _(all consoles)_    | Scrape a single console by slug (e.g. `super-nintendo`). Omit to scrape all consoles.  |
-| `--output-dir` | _(current dir)_     | Directory for the output JSON files. One `<DD-MM-YYYY>-<console>.json` file per console.|
+| `--output-dir` | _(current dir)_     | Base directory for output. Files are written to `<group>/<DD-MM-YYYY>-<console>.json`.  |
 | `--workers`    | `1`                 | Number of concurrent browser instances. See note below before increasing.             |
 | `--pause`      | `1.5`               | Seconds to wait between scroll attempts. Increase if games are not fully loading.      |
 
 ### Examples
 
 ```bash
-# Scrape all consoles, one JSON file per console in the current directory
+# Scrape all consoles, grouped JSON files under the current directory
 python3 scraper.py
 
-# Scrape a single console (writes e.g. 13-07-2026-super-nintendo.json)
+# Scrape a single console (writes nintendo/13-07-2026-super-nintendo.json)
 python3 scraper.py --console super-nintendo
 
-# Scrape a single console into a specific directory
+# Scrape a single console into a specific base directory
 python3 scraper.py --console nintendo-64 --output-dir ./data
 
 # Increase scroll pause time (useful if games aren't fully loading)
@@ -80,7 +93,7 @@ By default, all major NTSC consoles are scraped:
 
 **Nintendo:** NES, SNES, N64, GameCube, Wii, Wii U, Switch, Switch 2, Game Boy, Game Boy Color, Game Boy Advance, DS, 3DS, Virtual Boy, Game & Watch
 
-**Sony:** PlayStation, PS2, PS3, PS4, PS5, PSP, PS Vita
+**Sony:** PlayStation, PS2, PS3, PS4, PS5, PSP, PS Vita — each in NTSC/USA, PAL/Europe (`pal-`) and Japan (`jp-`) editions
 
 **Microsoft:** Xbox, Xbox 360, Xbox One, Xbox Series X
 

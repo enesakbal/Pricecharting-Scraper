@@ -23,10 +23,19 @@ NINTENDO_CONSOLES = [
     "nintendo-ds", "nintendo-3ds", "virtual-boy", "game-&-watch",
 ]
 
-SONY_CONSOLES = [
+# Sony consoles exist in three regional editions on pricecharting, each a
+# separate console page: NTSC/USA (bare slug), PAL/Europe (pal- prefix) and
+# Japan (jp- prefix). Regional pressings are distinct products with their own
+# prices, so we scrape all three.
+_SONY_NTSC = [
     "playstation", "playstation-2", "playstation-3", "playstation-4",
     "playstation-5", "psp", "playstation-vita",
 ]
+SONY_CONSOLES = (
+    _SONY_NTSC
+    + ["pal-" + c for c in _SONY_NTSC]
+    + ["jp-" + c for c in _SONY_NTSC]
+)
 
 XBOX_CONSOLES = [
     "xbox", "xbox-360", "xbox-one", "xbox-series-x"
@@ -45,14 +54,20 @@ SEGA_CONSOLES = [
     "sega-saturn", "sega-dreamcast", "sega-game-gear", "sega-pico"
 ]
 
-CONSOLES = [
-    *NINTENDO_CONSOLES,
-    *SONY_CONSOLES,
-    *XBOX_CONSOLES,
-    *ATARI_CONSOLES,
-    *NEO_GEO_CONSOLES,
-    *SEGA_CONSOLES,
-]
+# Maps a manufacturer group to its consoles. The group name is also the output
+# subfolder (e.g. sony/13-07-2026-playstation.json).
+GROUPS = {
+    "nintendo": NINTENDO_CONSOLES,
+    "sony": SONY_CONSOLES,
+    "xbox": XBOX_CONSOLES,
+    "atari": ATARI_CONSOLES,
+    "neo-geo": NEO_GEO_CONSOLES,
+    "sega": SEGA_CONSOLES,
+}
+
+CONSOLE_TO_GROUP = {console: group for group, consoles in GROUPS.items() for console in consoles}
+
+CONSOLES = [console for consoles in GROUPS.values() for console in consoles]
 
 
 def make_browser():
@@ -155,7 +170,10 @@ def scrape_console(console, pause_time):
             img_tag = image_td.find("img") if image_td else None
             if img_tag:
                 src = img_tag.get("src") or img_tag.get("data-src")
-                if src:
+                # Only real covers are CDN URLs ending in /60.jpg. Games without
+                # a cover serve a placeholder (no-image-available.png) — treat
+                # those as no image so to_dict() emits "image": null.
+                if src and src.endswith("/60.jpg"):
                     image_small = src
                     image_large = src.replace("/60.jpg", "/240.jpg")
 
@@ -172,21 +190,26 @@ def scrape_console(console, pause_time):
 
 
 def write_json(console, games, output_dir, date):
-    """Writes one console's games to a dated JSON file.
+    """Writes one console's games to a dated JSON file in its group folder.
 
     The file is a flat list of games; the console and scrape date are carried
     by the filename (DD-MM-YYYY-<console>.json) rather than repeated inside.
+    Files are grouped by manufacturer into subfolders, e.g.
+    sony/13-07-2026-playstation.json.
 
     Args:
         console: console slug (used in the filename)
         games: list of VideoGame objects for this console
-        output_dir: directory to write the file into
+        output_dir: base directory to write into
         date: scrape date string in DD-MM-YYYY form
 
     Returns:
         the path of the file written
     """
-    filename = os.path.join(output_dir, f"{date}-{console}.json")
+    group = CONSOLE_TO_GROUP.get(console, "other")
+    group_dir = os.path.join(output_dir, group)
+    os.makedirs(group_dir, exist_ok=True)
+    filename = os.path.join(group_dir, f"{date}-{console}.json")
     data = [g.to_dict() for g in games]
 
     with open(filename, "w", encoding="utf-8") as f:
