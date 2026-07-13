@@ -37,9 +37,14 @@ SONY_CONSOLES = (
     + ["jp-" + c for c in _SONY_NTSC]
 )
 
-XBOX_CONSOLES = [
-    "xbox", "xbox-360", "xbox-one", "xbox-series-x"
-]
+# Xbox consoles likewise have NTSC/USA, PAL/Europe and Japan editions on
+# pricecharting (Japan libraries are small but present).
+_XBOX_NTSC = ["xbox", "xbox-360", "xbox-one", "xbox-series-x"]
+XBOX_CONSOLES = (
+    _XBOX_NTSC
+    + ["pal-" + c for c in _XBOX_NTSC]
+    + ["jp-" + c for c in _XBOX_NTSC]
+)
 
 ATARI_CONSOLES = [
     "atari-2600", "atari-5200", "atari-7800", "atari-400", "atari-lynx", "jaguar",
