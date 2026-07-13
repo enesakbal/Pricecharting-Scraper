@@ -54,9 +54,19 @@ NEO_GEO_CONSOLES = [
     "neo-geo-mvs", "neo-geo-aes", "neo-geo-cd", "neo-geo-pocket-color"
 ]
 
+# Sega's regional editions use different names, so they can't be derived by a
+# simple prefix: PAL/JP Genesis is "Mega Drive", Sega CD is "Mega-CD", and the
+# JP Master System is "Mark III". The 32X has no separate PAL/JP page.
 SEGA_CONSOLES = [
+    # NTSC / USA
     "sega-master-system", "sega-genesis", "sega-32x", "sega-cd",
-    "sega-saturn", "sega-dreamcast", "sega-game-gear", "sega-pico"
+    "sega-saturn", "sega-dreamcast", "sega-game-gear", "sega-pico",
+    # PAL / Europe
+    "pal-sega-master-system", "pal-sega-mega-drive", "pal-sega-mega-cd",
+    "pal-sega-saturn", "pal-sega-dreamcast", "pal-sega-game-gear", "pal-sega-pico",
+    # Japan
+    "jp-sega-mark-iii", "jp-sega-mega-drive", "jp-sega-mega-cd",
+    "jp-sega-saturn", "jp-sega-dreamcast", "jp-sega-game-gear", "jp-sega-pico",
 ]
 
 # Maps a manufacturer group to its consoles. The group name is also the output
