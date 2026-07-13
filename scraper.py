@@ -17,10 +17,23 @@ from bs4 import BeautifulSoup
 from videogame import VideoGame
 
 
+# Nintendo consoles also have PAL/Europe and Japan editions. Japan renames the
+# NES to "Famicom" and the SNES to "Super Famicom" (special slugs); the rest use
+# the pal-/jp- prefix. Virtual Boy and Game & Watch have no PAL page, and
+# Game & Watch has no Japan page.
 NINTENDO_CONSOLES = [
+    # NTSC / USA
     "super-nintendo", "nes", "nintendo-64", "gamecube", "wii", "wii-u",
     "nintendo-switch", "nintendo-switch-2", "gameboy", "gameboy-color", "gameboy-advance",
     "nintendo-ds", "nintendo-3ds", "virtual-boy", "game-&-watch",
+    # PAL / Europe
+    "pal-nes", "pal-super-nintendo", "pal-nintendo-64", "pal-gamecube", "pal-wii", "pal-wii-u",
+    "pal-nintendo-switch", "pal-nintendo-switch-2", "pal-gameboy", "pal-gameboy-color",
+    "pal-gameboy-advance", "pal-nintendo-ds", "pal-nintendo-3ds",
+    # Japan
+    "famicom", "super-famicom", "jp-nintendo-64", "jp-gamecube", "jp-wii", "jp-wii-u",
+    "jp-nintendo-switch", "jp-nintendo-switch-2", "jp-gameboy", "jp-gameboy-color",
+    "jp-gameboy-advance", "jp-nintendo-ds", "jp-nintendo-3ds", "jp-virtual-boy",
 ]
 
 # Sony consoles exist in three regional editions on pricecharting, each a
@@ -48,6 +61,8 @@ XBOX_CONSOLES = (
 
 ATARI_CONSOLES = [
     "atari-2600", "atari-5200", "atari-7800", "atari-400", "atari-lynx", "jaguar",
+    # PAL / Europe — only the 2600 and 7800 have separate PAL pages
+    "pal-atari-2600", "pal-atari-7800",
 ]
 
 NEO_GEO_CONSOLES = [
