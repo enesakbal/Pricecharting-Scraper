@@ -40,12 +40,13 @@ python3 scraper.py [--console CONSOLE] [--output-dir DIR] [--workers N] [--pause
 
 Each console is written to its own file named `<DD-MM-YYYY>-<console>.json`
 (the scrape date followed by the console slug), grouped into a subfolder per
-manufacturer:
+manufacturer under the `game-prices/` output directory:
 
 ```
-nintendo/13-07-2026-nes.json
-sony/13-07-2026-playstation.json
-atari/13-07-2026-atari-2600.json
+game-prices/
+  nintendo/13-07-2026-nes.json
+  sony/13-07-2026-playstation.json
+  atari/13-07-2026-atari-2600.json
 ```
 
 Groups: `nintendo`, `sony`, `xbox`, `atari`, `neo-geo`, `sega`.
@@ -59,17 +60,17 @@ console on pricecharting: NTSC/USA (`playstation`), PAL/Europe
 | Argument       | Default             | Description                                                                            |
 | -------------- | ------------------- | ------------------------------------------------------------------------------------- |
 | `--console`    | _(all consoles)_    | Scrape a single console by slug (e.g. `super-nintendo`). Omit to scrape all consoles.  |
-| `--output-dir` | _(current dir)_     | Base directory for output. Files are written to `<group>/<DD-MM-YYYY>-<console>.json`.  |
+| `--output-dir` | `game-prices`       | Base directory for output. Files are written to `<output-dir>/<group>/<DD-MM-YYYY>-<console>.json`. |
 | `--workers`    | `1`                 | Number of concurrent browser instances. See note below before increasing.             |
 | `--pause`      | `1.5`               | Seconds to wait between scroll attempts. Increase if games are not fully loading.      |
 
 ### Examples
 
 ```bash
-# Scrape all consoles, grouped JSON files under the current directory
+# Scrape all consoles into game-prices/<group>/...
 python3 scraper.py
 
-# Scrape a single console (writes nintendo/13-07-2026-super-nintendo.json)
+# Scrape a single console (writes game-prices/nintendo/13-07-2026-super-nintendo.json)
 python3 scraper.py --console super-nintendo
 
 # Scrape a single console into a specific base directory

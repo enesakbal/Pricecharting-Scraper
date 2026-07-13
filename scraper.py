@@ -266,9 +266,9 @@ def main():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default=".",
-        help="Directory for the output JSON files (default: current directory). "
-             "Each console is written to <DD-MM-YYYY>-<console>.json."
+        default="game-prices",
+        help="Base directory for output (default: game-prices). Files are written "
+             "to <output-dir>/<group>/<DD-MM-YYYY>-<console>.json."
     )
     parser.add_argument(
         "--pause",
