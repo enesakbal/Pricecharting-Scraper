@@ -25,7 +25,7 @@ NINTENDO_CONSOLES = [
     # NTSC / USA
     "super-nintendo", "nes", "nintendo-64", "gamecube", "wii", "wii-u",
     "nintendo-switch", "nintendo-switch-2", "gameboy", "gameboy-color", "gameboy-advance",
-    "nintendo-ds", "nintendo-3ds", "virtual-boy", "game-&-watch",
+    "nintendo-ds", "nintendo-3ds", "virtual-boy", "game-&-watch", "nintendo-power",
     # PAL / Europe
     "pal-nes", "pal-super-nintendo", "pal-nintendo-64", "pal-gamecube", "pal-wii", "pal-wii-u",
     "pal-nintendo-switch", "pal-nintendo-switch-2", "pal-gameboy", "pal-gameboy-color",
